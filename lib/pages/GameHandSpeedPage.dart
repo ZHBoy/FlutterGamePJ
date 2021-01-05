@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../widgets/SimpleDialog.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 /*
  * 拼手速页面
@@ -14,15 +15,42 @@ class _GameHandSpeedPageState extends State<GameHandSpeedPage> {
   String blueNum = "0"; //蓝色方数值
   String redNum = "0"; //红色方数值
 
-  @override
+  // 音频播放器
+  AudioPlayer audioPlayer = AudioPlayer(mode: PlayerMode.MEDIA_PLAYER);
   void initState() {
     super.initState();
+
     // initState不允许加上async，通过 Future.delayed获取数据，setState装载到页面上
     Future.delayed(
         Duration.zero,
         () => setState(() {
               alertDialog(context, "先点到30赢");
             }));
+  }
+
+  @override
+  void deactivate() async {
+    print('结束');
+    int result = await audioPlayer.release();
+    if (result == 1) {
+      print('release success');
+    } else {
+      print('release failed');
+    }
+    super.deactivate();
+  }
+
+  play() async {
+    int result = await audioPlayer.play(
+        "http://img-cdn2.515ppt.com/sound/00/29/03/50/290350_4314898cd9c1d23577d9e1ce017d9042.mp3");
+    if (result == 1) {
+      // success
+      print("success");
+    }
+  }
+
+  stop() async {
+    await audioPlayer.stop();
   }
 
   // 动态设置布局
@@ -71,6 +99,7 @@ class _GameHandSpeedPageState extends State<GameHandSpeedPage> {
                       if (blue == maxNum) {
                         this.blueNum = "你赢了";
                         this.redNum = "你输了";
+                        stop(); //停止播放音频
                       } else {
                         this.blueNum = (blue + 1).toString();
                       }
@@ -79,11 +108,13 @@ class _GameHandSpeedPageState extends State<GameHandSpeedPage> {
                       if (red == maxNum) {
                         this.redNum = "你赢了";
                         this.blueNum = "你输了";
+                        stop(); //停止播放音频
                       } else {
                         this.redNum = (red + 1).toString();
                       }
                     }
                   });
+                  play(); //开始播放
                 },
                 color: isBlue ? Colors.red : Colors.blue, //按钮的背景颜色
                 textColor: Colors.white, //字体颜色
